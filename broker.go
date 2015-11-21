@@ -45,11 +45,7 @@ type responsePromise struct {
 // NewBroker creates and returns a Broker targetting the given host:port address.
 // This does not attempt to actually connect, you have to call Open() for that.
 func NewBroker(addr string) *Broker {
-	if tunnel, ok := brokerMap[addr]; ok {
-		return &Broker{id: -1, addr: addr, tunnelAddr: tunnel}
-	}
-
-	return &Broker{id: -1, addr: addr, tunnelAddr: addr}
+	return &Broker{id: -1, addr: addr}
 }
 
 // Open tries to connect to the Broker if it is not already connected or connecting, but does not block
@@ -58,6 +54,11 @@ func NewBroker(addr string) *Broker {
 // follow it by a call to Connected(). The only errors Open will return directly are ConfigurationError or
 // AlreadyConnected. If conf is nil, the result of NewConfig() is used.
 func (b *Broker) Open(conf *Config) error {
+	if tunnel, ok := brokerMap[b.addr]; ok {
+		b.tunnelAddr = tunnel
+	} else {
+		b.tunnelAddr = addr
+	}
 	if conf == nil {
 		conf = NewConfig()
 	}
