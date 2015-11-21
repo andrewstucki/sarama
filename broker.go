@@ -57,7 +57,7 @@ func (b *Broker) Open(conf *Config) error {
 	if tunnel, ok := brokerMap[b.addr]; ok {
 		b.tunnelAddr = tunnel
 	} else {
-		b.tunnelAddr = addr
+		b.tunnelAddr = b.addr
 	}
 	if conf == nil {
 		conf = NewConfig()
