@@ -179,10 +179,11 @@ func (m *MetadataResponse) encode(pe packetEncoder) error {
 // testing API
 
 func (m *MetadataResponse) AddBroker(addr string, id int32) {
+	var broker *Broker
 	if tunnel, ok := brokerMap[addr]; ok {
-		broker := &Broker{id: id, addr: addr, tunnelAddr: tunnel}
+		broker = &Broker{id: id, addr: addr, tunnelAddr: tunnel}
 	} else {
-		broker := &Broker{id: id, addr: addr, tunnelAddr: addr}
+		broker = &Broker{id: id, addr: addr, tunnelAddr: addr}
 	}
 
 	m.Brokers = append(m.Brokers, broker)
