@@ -11,11 +11,20 @@ import (
 	"time"
 )
 
+var brokerMap = make(map[string]string)
+var brokerMutex = &sync.Mutex{}
+
+func TunnelBroker(realAddr, tunnelAddr string) {
+	brokerMutex.Lock()
+	brokerMap[realAddr] = tunnelAddr
+	brokerMutex.Unlock()
+}
+
 // Broker represents a single Kafka broker connection. All operations on this object are entirely concurrency-safe.
 type Broker struct {
-	id   int32
-	addr string
-
+	id            int32
+	addr          string
+	tunnelAddr    string
 	conf          *Config
 	correlationID int32
 	conn          net.Conn
@@ -36,7 +45,11 @@ type responsePromise struct {
 // NewBroker creates and returns a Broker targetting the given host:port address.
 // This does not attempt to actually connect, you have to call Open() for that.
 func NewBroker(addr string) *Broker {
-	return &Broker{id: -1, addr: addr}
+	if tunnel, ok := brokerMap[addr]; ok {
+		return &Broker{id: -1, addr: addr, tunnelAddr: tunnel}
+	}
+
+	return &Broker{id: -1, addr: addr, tunnelAddr: addr}
 }
 
 // Open tries to connect to the Broker if it is not already connected or connecting, but does not block
@@ -77,12 +90,12 @@ func (b *Broker) Open(conf *Config) error {
 		if conf.Net.TLS.Enable {
 			b.conn, b.connErr = tls.DialWithDialer(&dialer, "tcp", b.addr, conf.Net.TLS.Config)
 		} else {
-			b.conn, b.connErr = dialer.Dial("tcp", b.addr)
+			b.conn, b.connErr = dialer.Dial("tcp", b.tunnelAddr)
 		}
 		if b.connErr != nil {
 			b.conn = nil
 			atomic.StoreInt32(&b.opened, 0)
-			Logger.Printf("Failed to connect to broker %s: %s\n", b.addr, b.connErr)
+			Logger.Printf("Failed to connect to broker %s: %s\n", b.tunnelAddr, b.connErr)
 			return
 		}
 
