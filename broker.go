@@ -88,14 +88,14 @@ func (b *Broker) Open(conf *Config) error {
 		}
 
 		if conf.Net.TLS.Enable {
-			b.conn, b.connErr = tls.DialWithDialer(&dialer, "tcp", b.addr, conf.Net.TLS.Config)
+			b.conn, b.connErr = tls.DialWithDialer(&dialer, "tcp", b.tunnelAddr, conf.Net.TLS.Config)
 		} else {
 			b.conn, b.connErr = dialer.Dial("tcp", b.tunnelAddr)
 		}
 		if b.connErr != nil {
 			b.conn = nil
 			atomic.StoreInt32(&b.opened, 0)
-			Logger.Printf("Failed to connect to broker %s: %s\n", b.tunnelAddr, b.connErr)
+			Logger.Printf("Failed to connect to broker %s: %s\n", b.addr, b.connErr)
 			return
 		}
 
