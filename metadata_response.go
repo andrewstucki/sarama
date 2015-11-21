@@ -179,7 +179,13 @@ func (m *MetadataResponse) encode(pe packetEncoder) error {
 // testing API
 
 func (m *MetadataResponse) AddBroker(addr string, id int32) {
-	m.Brokers = append(m.Brokers, &Broker{id: id, addr: addr})
+	if tunnel, ok := brokerMap[addr]; ok {
+		broker := &Broker{id: id, addr: addr, tunnelAddr: tunnel}
+	} else {
+		broker := &Broker{id: id, addr: addr, tunnelAddr: addr}
+	}
+
+	m.Brokers = append(m.Brokers, broker)
 }
 
 func (m *MetadataResponse) AddTopic(topic string, err KError) *TopicMetadata {
