@@ -326,6 +326,8 @@ func (b *Broker) decode(pd packetDecoder) (err error) {
 		return err
 	}
 
+	Logger.Printf("Decode Packet Host/Port: %s:%d\n", host, port)
+
 	b.addr = net.JoinHostPort(host, fmt.Sprint(port))
 	if _, _, err := net.SplitHostPort(b.addr); err != nil {
 		return err
@@ -352,6 +354,7 @@ func (b *Broker) encode(pe packetEncoder) (err error) {
 		return err
 	}
 
+	Logger.Printf("Encode Packet Host/Port: %s:%d\n", host, port)
 	pe.putInt32(int32(port))
 
 	return nil
